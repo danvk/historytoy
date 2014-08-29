@@ -43,7 +43,8 @@ History.prototype.handlePopState = function(state) {
       return;
     }
   }
-  console.log('handlePopState', state);
+
+  $(this).trigger('setStateInResponseToUser', state);
 };
 
 History.prototype.pushState = function(stateObj, title, url) {
@@ -179,5 +180,19 @@ $(function() {
     .on('selectPanel', function(e, panelNum) {
       h.replaceState({panel:true, panelNum: panelNum}, 'Toy App - panel #' + panelNum, '/#p:' + panelNum);
     })
+
+  $(h).on('setStateInResponseToUser', function(e, state) {
+    console.log('Setting state in response to user action:', state);
+    // It's important that these methods only configure the UI.
+    // They must not trigger events, or they could cause a loop!
+    if ('grid' in state) {
+      openGrid();
+    } else if ('panelNum' in state) {
+      openGrid();
+      showPanel(state['panelNum']);
+    } else if ('initial' in state) {
+      closeGrid();
+    }
+  });
 
 });

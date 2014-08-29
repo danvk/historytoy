@@ -42,22 +42,38 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
 <script type="text/javascript">
+function openGrid() {
+  $('.panel').hide();
+  $('#grid').show();
+}
+
+function closeGrid() {
+  $('#grid').hide();
+}
+
+function showPanel(num) {
+  $('.panel').hide();
+  $('#panel-' + num).show();
+}
+
+function closePanel() {
+  $('.panel').hide();
+}
+
 $(function() {
 
   $('#open-grid').on('click', function() {
-    $('.panel').hide();
-    $('#grid').show();
+    openGrid();
     $(window).trigger('showGrid');
   });
   $('#hide-grid').on('click', function() {
-    $('#grid').hide();
+    closeGrid();
     $(window).trigger('hideGrid');
   });
   $('.show-panel').on('click', function() {
     var currentPanelNum = $('#grid .panel:visible').attr('panel-num');
     var panelNum = $(this).attr('panel-num');
-    $('.panel').hide();
-    $('#panel-' + panelNum).show();
+    showPanel(panelNum);
 
     if (!currentPanelNum) {
       $(window).trigger('expandPanel');
@@ -67,13 +83,12 @@ $(function() {
     }
   });
   $('.close-panel').on('click', function() {
-    $(this).parents('.panel').hide();
+    closePanel();
     $(window).trigger('collapsePanel');
   });
   $('#open-grid-sel').on('click', function() {
-    $('.panel').hide();
-    $('#grid').show();
-    $('#panel-1').show();
+    openGrid();
+    showPanel('1');
     $(window).trigger('showGrid');
     $(window).trigger('expandPanel');
     $(window).trigger('selectPanel', '1');
