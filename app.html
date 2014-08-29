@@ -21,6 +21,7 @@
 <h2>History Toy App</h2>
 
 <button id="open-grid">Open Grid View</button>
+<button id="open-grid-sel">Open grid with selection</button>
 
 <div id="grid" style="display:none;">
   <h2>Welcome to&hellip;The Grid.</h2>
@@ -68,6 +69,14 @@ $(function() {
   $('.close-panel').on('click', function() {
     $(this).parents('.panel').hide();
     $(window).trigger('collapsePanel');
+  });
+  $('#open-grid-sel').on('click', function() {
+    $('.panel').hide();
+    $('#grid').show();
+    $('#panel-1').show();
+    $(window).trigger('showGrid');
+    $(window).trigger('expandPanel');
+    $(window).trigger('selectPanel', '1');
   });
 });
 </script>
