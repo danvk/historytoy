@@ -1,2 +1,87 @@
-<h2>History Toy</h2>
-<a href="app.html">Open App</a>
+<html>
+<head><title>Toy App</title></head>
+<style>
+#grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.75);
+  padding: 100px;
+  color: white;
+}
+.panel {
+  border: 1px solid white;
+  margin: 100px;
+  padding: 20px;
+}
+</style>
+<body>
+<h2>History Toy App</h2>
+
+<button id="open-grid">Open Grid View</button>
+<button id="open-grid-sel">Open grid with selection</button>
+
+<div id="grid" style="display:none;">
+  <h2>Welcome to&hellip;The Grid.</h2>
+  <button id="hide-grid">Hide the grid</button>
+  <button class="show-panel" panel-num="1">Show Panel 1</button>
+  <button class="show-panel" panel-num="2">Show Panel 2</button>
+
+  <div class="panel" id="panel-1" panel-num="1" style="display:none;">
+    Panel #1
+    <button class="close-panel">Close</button>
+  </div>
+  <div class="panel" id="panel-2" panel-num="2" style="display:none;">
+    Panel #2
+    <button class="close-panel">Close</button>
+  </div>
+</div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+$(function() {
+
+  $('#open-grid').on('click', function() {
+    $('.panel').hide();
+    $('#grid').show();
+    $(window).trigger('showGrid');
+  });
+  $('#hide-grid').on('click', function() {
+    $('#grid').hide();
+    $(window).trigger('hideGrid');
+  });
+  $('.show-panel').on('click', function() {
+    var currentPanelNum = $('#grid .panel:visible').attr('panel-num');
+    var panelNum = $(this).attr('panel-num');
+    $('.panel').hide();
+    $('#panel-' + panelNum).show();
+
+    if (!currentPanelNum) {
+      $(window).trigger('expandPanel');
+    }
+    if (currentPanelNum != panelNum) {
+      $(window).trigger('selectPanel', panelNum);
+    }
+  });
+  $('.close-panel').on('click', function() {
+    $(this).parents('.panel').hide();
+    $(window).trigger('collapsePanel');
+  });
+  $('#open-grid-sel').on('click', function() {
+    $('.panel').hide();
+    $('#grid').show();
+    $('#panel-1').show();
+    $(window).trigger('showGrid');
+    $(window).trigger('expandPanel');
+    $(window).trigger('selectPanel', '1');
+  });
+});
+</script>
+
+<script src="history.js"></script>
+
+</body>
+</html>
