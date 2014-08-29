@@ -1,7 +1,11 @@
 // History management service.
-var History = function() {
+// Consider using this instead: https://github.com/browserstate/history.js
+var History = function(hashToStateAdapter) {
   this.states = [];
+  this.hashToStateAdapter = hashToStateAdapter;
+};
 
+History.prototype.initialize = function() {
   var that = this;
   $(window).on('popstate', function(e) {
     that.handlePopState(e.originalEvent.state);
@@ -9,7 +13,18 @@ var History = function() {
 
   // Create an artificial initial state
   if (!history.state) {
-    this.replaceState({initial: true}, document.title, document.location.href);
+    var state = {initial: true};
+    var didSetState = false;
+    if (this.hashToStateAdapter) {
+      // Need to honor any hash fragments that the user navigated to.
+      state = this.hashToStateAdapter(document.location.hash);
+      didSetState = true;
+    }
+    this.replaceState(state, document.title, document.location.href);
+
+    if (didSetState) {
+      $(this).trigger('setStateInResponseToPageLoad', state);
+    }
   }
 };
 
@@ -42,6 +57,10 @@ History.prototype.handlePopState = function(state) {
       delete stateObj.expectingBack;
       return;
     }
+  }
+
+  if (!state && this.hashToStateAdapter) {
+    state = this.hashToStateAdapter(document.location.hash);
   }
 
   $(this).trigger('setStateInResponseToUser', state);
@@ -138,9 +157,20 @@ History.prototype.logStack = function() {
   }
 };
 
-h = new History();
+var panelRe = /#p:(\d+)/;
+function hashToState(hash) {
+  var m;
+  if (hash == '') {
+    return {initial: true};
+  } else if (hash == '#g') {
+    return {grid: true};
+  } else if (m = panelRe.exec(hash)) {
+    return {panel: true, panelNum: m[1]};
+  }
+}
 
 
+h = new History(hashToState);
 
 // An attempt to build history into app.html!
 $(function() {
@@ -181,7 +211,7 @@ $(function() {
       h.replaceState({panel:true, panelNum: panelNum}, 'Toy App - panel #' + panelNum, '/#p:' + panelNum);
     })
 
-  $(h).on('setStateInResponseToUser', function(e, state) {
+  $(h).on('setStateInResponseToUser setStateInResponseToPageLoad', function(e, state) {
     console.log('Setting state in response to user action:', state);
     // It's important that these methods only configure the UI.
     // They must not trigger events, or they could cause a loop!
@@ -194,5 +224,7 @@ $(function() {
       closeGrid();
     }
   });
+
+  h.initialize();
 
 });
