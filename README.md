@@ -19,7 +19,7 @@ management without muddying up this code.
 
 
 history.js
-==========
+----------
 
 This is the heart of the approach. It's a wrapper around `history.pushState` and `history.replaceState` which
 attaches unique IDs to each state. It also attaches links to the previous state, which means that you can never
@@ -28,7 +28,7 @@ exactly how many states you want to pop back through.
 
 
 Demo
-====
+----
 
 Run:
 
