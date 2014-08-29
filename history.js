@@ -39,6 +39,7 @@ History.prototype.makeState = function(obj) {
     id: Date.now() + '' + Math.floor(Math.random() * 100000000)
   }, obj);
 };
+
 History.prototype.simplifyState = function(obj) {
   var state = $.extend({}, obj);
   delete state['id'];
@@ -66,12 +67,15 @@ History.prototype.handlePopState = function(state) {
   $(this).trigger('setStateInResponseToUser', state);
 };
 
+// Just like history.pushState.
 History.prototype.pushState = function(stateObj, title, url) {
   var state = this.makeState(stateObj);
   this.states.push(state);
   history.pushState(state, title, url);
   document.title = title;
 };
+
+// Just like history.replaceState.
 History.prototype.replaceState = function(stateObj, title, url) {
   var curState = this.getCurrentState();
   var replaceIdx = null;
@@ -110,6 +114,7 @@ History.prototype.getStateIndexById = function(stateId) {
   return null;
 };
 
+// Get the state object one prior to the given one.
 History.prototype.getPreviousState = function(state) {
   if (!('previousStateId' in state)) return null;
   var id = state['previousStateId'];
@@ -122,6 +127,12 @@ History.prototype.getPreviousState = function(state) {
   throw "State out of whack!";
 };
 
+// Go back in history until the predicate is true.
+// If predicate is a string, go back until it's a key in the state object.
+// This will not result in a setStateInResponseToUser event firing.
+// Returns the number of steps back in the history that it went (possibly 0 if
+// the current state matches the predicate).
+// Returns null if no historical state matches the predicate.
 History.prototype.goBackUntil = function(predicate) {
   // Convenience for common case of checking if history state has a key.
   if (typeof(predicate) == "string") {
@@ -147,6 +158,7 @@ History.prototype.goBackUntil = function(predicate) {
   }
 };
 
+// Debugging method -- prints the history stack.
 History.prototype.logStack = function() {
   var state = this.getCurrentState();
   var i = 0;
@@ -156,75 +168,3 @@ History.prototype.logStack = function() {
     i++;
   }
 };
-
-var panelRe = /#p:(\d+)/;
-function hashToState(hash) {
-  var m;
-  if (hash == '') {
-    return {initial: true};
-  } else if (hash == '#g') {
-    return {grid: true};
-  } else if (m = panelRe.exec(hash)) {
-    return {panel: true, panelNum: m[1]};
-  }
-}
-
-
-h = new History(hashToState);
-
-// An attempt to build history into app.html!
-$(function() {
-
-  // Event logging
-  $(window)
-    .on('showGrid', function() {
-      console.log('showGrid');
-    })
-    .on('hideGrid', function() {
-      console.log('hideGrid');
-    })
-    .on('selectPanel', function(e, panelNum) {
-      console.log('selected panel', panelNum);
-    })
-    .on('collapsePanel', function(panelNum) {
-      console.log('collapsed panel');
-    })
-    .on('expandPanel', function(panelNum) {
-      console.log('expanded panel');
-    })
-
-  // History Management
-  $(window)
-    .on('showGrid', function() {
-      h.pushState({grid:true}, 'Toy App - grid', '/#g');
-    })
-    .on('hideGrid', function() {
-      var numBack = h.goBackUntil('initial');
-    })
-    .on('expandPanel', function() {
-      h.pushState({panel:true}, 'Toy App - panel', '/#p');
-    })
-    .on('collapsePanel', function() {
-      var numBack = h.goBackUntil('grid');
-    })
-    .on('selectPanel', function(e, panelNum) {
-      h.replaceState({panel:true, panelNum: panelNum}, 'Toy App - panel #' + panelNum, '/#p:' + panelNum);
-    })
-
-  $(h).on('setStateInResponseToUser setStateInResponseToPageLoad', function(e, state) {
-    console.log('Setting state in response to user action:', state);
-    // It's important that these methods only configure the UI.
-    // They must not trigger events, or they could cause a loop!
-    if ('grid' in state) {
-      openGrid();
-    } else if ('panelNum' in state) {
-      openGrid();
-      showPanel(state['panelNum']);
-    } else if ('initial' in state) {
-      closeGrid();
-    }
-  });
-
-  h.initialize();
-
-});
