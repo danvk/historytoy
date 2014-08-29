@@ -28,11 +28,11 @@
   <button class="show-panel" panel-num="1">Show Panel 1</button>
   <button class="show-panel" panel-num="2">Show Panel 2</button>
 
-  <div class="panel" id="panel-1" style="display:none;">
+  <div class="panel" id="panel-1" panel-num="1" style="display:none;">
     Panel #1
     <button class="close-panel">Close</button>
   </div>
-  <div class="panel" id="panel-2" style="display:none;">
+  <div class="panel" id="panel-2" panel-num="2" style="display:none;">
     Panel #2
     <button class="close-panel">Close</button>
   </div>
@@ -46,20 +46,33 @@ $(function() {
   $('#open-grid').on('click', function() {
     $('.panel').hide();
     $('#grid').show();
+    $(window).trigger('showGrid');
   });
   $('#hide-grid').on('click', function() {
     $('#grid').hide();
+    $(window).trigger('hideGrid');
   });
   $('.show-panel').on('click', function() {
+    var currentPanelNum = $('#grid .panel:visible').attr('panel-num');
     var panelNum = $(this).attr('panel-num');
     $('.panel').hide();
     $('#panel-' + panelNum).show();
+
+    if (!currentPanelNum) {
+      $(window).trigger('expandPanel');
+    }
+    if (currentPanelNum != panelNum) {
+      $(window).trigger('selectPanel', panelNum);
+    }
   });
   $('.close-panel').on('click', function() {
     $(this).parents('.panel').hide();
+    $(window).trigger('collapsePanel');
   });
 });
 </script>
+
+<script src="history.js"></script>
 
 </body>
 </html>
