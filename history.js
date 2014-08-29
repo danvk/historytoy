@@ -21,7 +21,7 @@ History.prototype.makeState = function(obj) {
   return $.extend({
     length: history.length,
     previousStateId: currentStateId,
-    id: Date.now() + '' + Math.floor(Math.random() * 100000)
+    id: Date.now() + '' + Math.floor(Math.random() * 100000000)
   }, obj);
 };
 History.prototype.simplifyState = function(obj) {
@@ -35,6 +35,14 @@ History.prototype.simplifyState = function(obj) {
 History.prototype.handlePopState = function(state) {
   // note: we don't remove entries from this.state here, since the user could
   // still go forward to them.
+  if (state && 'id' in state) {
+    var stateObj = this.states[this.getStateIndexById(state.id)];
+    if (stateObj && stateObj.expectingBack) {
+      // This is happening as a result of a call on the History object.
+      delete stateObj.expectingBack;
+      return;
+    }
+  }
   console.log('handlePopState', state);
 };
 
@@ -107,10 +115,16 @@ History.prototype.goBackUntil = function(predicate) {
     state = this.getPreviousState(state);
     numBack += 1;
   }
-  if (numBack) {
+  if (state && numBack) {
+    state.expectingBack = true;
     history.go(-numBack);
+    return numBack;
   }
-  return numBack;
+  if (numBack == 0) {
+    return 0;  // current state fulfilled predicate
+  } else {
+    return null;  // no state fulfilled predicate
+  }
 };
 
 History.prototype.logStack = function() {
@@ -147,10 +161,6 @@ $(function() {
     .on('expandPanel', function(panelNum) {
       console.log('expanded panel');
     })
-    .on('popstate', function(e) {
-      var state = e.originalEvent.state;
-      console.log('popstate fired', state);
-    });
 
   // History Management
   $(window)
