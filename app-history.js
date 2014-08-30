@@ -25,13 +25,13 @@ $(function() {
       h.pushState({grid:true}, 'Toy App - grid', '/#g');
     })
     .on('hideGrid', function() {
-      var numBack = h.goBackUntil('initial');
+      h.goBackUntil('initial', [{initial:true}, 'Toy App', '/']);
     })
     .on('expandPanel', function() {
       h.pushState({panel:true}, 'Toy App - panel', '/#p');
     })
     .on('collapsePanel', function() {
-      var numBack = h.goBackUntil('grid');
+      h.goBackUntil('grid', [{grid:true}, 'Toy App - grid', '/#g']);
     })
     .on('selectPanel', function(e, panelNum) {
       h.replaceState({

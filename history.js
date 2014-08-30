@@ -127,22 +127,29 @@ History.prototype.getPreviousState = function(state) {
   throw "State out of whack!";
 };
 
-// Go back in history until the predicate is true.
-// If predicate is a string, go back until it's a key in the state object.
-// This will not result in a setStateInResponseToUser event firing.
-// Returns the number of steps back in the history that it went (possibly 0 if
-// the current state matches the predicate).
-// Returns null if no historical state matches the predicate.
-History.prototype.goBackUntil = function(predicate) {
+/**
+ * Go back in history until the predicate is true.
+ * If predicate is a string, go back until it's a key in the state object.
+ * This will not result in a setStateInResponseToUser event firing.
+ * Returns the number of steps back in the history that it went (possibly 0 if
+ * the current state matches the predicate).
+ * If no matching history state is found, the history stack will be cleared and
+ * alternativeState will be pushed on.
+ */
+History.prototype.goBackUntil = function(predicate, alternativeState) {
   // Convenience for common case of checking if history state has a key.
   if (typeof(predicate) == "string") {
-    return this.goBackUntil(function(state) { return predicate in state });
+    return this.goBackUntil(
+        function(state) { return predicate in state },
+        alternativeState);
   }
 
   var state = this.getCurrentState();
   var numBack = 0;
 
+  var lastState = null;
   while (state && !predicate(state)) {
+    lastState = state;
     state = this.getPreviousState(state);
     numBack += 1;
   }
@@ -154,7 +161,11 @@ History.prototype.goBackUntil = function(predicate) {
   if (numBack == 0) {
     return 0;  // current state fulfilled predicate
   } else {
-    return null;  // no state fulfilled predicate
+    // no state fulfilled predicate. Clear the stack to just one state and
+    // replace it with alternativeState.
+    lastState.expectingBack = true;
+    history.go(-(numBack - 1));
+    this.replaceState(alternativeState[0], alternativeState[1], alternativeState[2]);
   }
 };
 
