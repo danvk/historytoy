@@ -17,6 +17,9 @@ function hashToState(hash) {
 // It's exposed to facilitate debugging.
 h = new History(hashToState);
 
+// TODO: consider adding stateToHash and stateToTitle functions to History
+// object. Combining these seems to be a common pattern.
+
 $(function() {
   // These are events raised by the UI code.
   // These handlers shape the history in response to the UI events.
