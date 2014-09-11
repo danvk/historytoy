@@ -14,7 +14,7 @@ History.prototype.initialize = function() {
   // Create an artificial initial state
   var state = {initial: true};
   var didSetState = false;
-  if (this.hashToStateAdapter) {
+  if (this.hashToStateAdapter && document.location.hash) {
     // Need to honor any hash fragments that the user navigated to.
     state = this.hashToStateAdapter(document.location.hash);
     didSetState = true;
