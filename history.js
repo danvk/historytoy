@@ -12,19 +12,20 @@ History.prototype.initialize = function() {
   });
 
   // Create an artificial initial state
-  if (!history.state) {
-    var state = {initial: true};
-    var didSetState = false;
-    if (this.hashToStateAdapter) {
-      // Need to honor any hash fragments that the user navigated to.
-      state = this.hashToStateAdapter(document.location.hash);
-      didSetState = true;
-    }
-    this.replaceState(state, document.title, document.location.href);
+  var state = {initial: true};
+  var didSetState = false;
+  if (this.hashToStateAdapter) {
+    // Need to honor any hash fragments that the user navigated to.
+    state = this.hashToStateAdapter(document.location.hash);
+    didSetState = true;
+  }
 
-    if (didSetState) {
-      $(this).trigger('setStateInResponseToPageLoad', state);
-    }
+  // Blow away the current state -- it's only going to cause trouble.
+  history.replaceState({}, '', document.location.href);
+  this.replaceState(state, document.title, document.location.href);
+
+  if (didSetState) {
+    $(this).trigger('setStateInResponseToPageLoad', state);
   }
 };
 
